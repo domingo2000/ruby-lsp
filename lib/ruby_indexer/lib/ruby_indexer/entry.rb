@@ -64,6 +64,11 @@ module RubyIndexer
       def short_name
         T.must(@name.split("::").last)
       end
+
+      sig { returns(Array) }
+      def ancestors
+        (@prepended_modules.reverse + [name] + @included_modules).uniq
+      end
     end
 
     class Module < Namespace
@@ -89,6 +94,10 @@ module RubyIndexer
       def initialize(name, file_path, location, comments, parent_class)
         super(name, file_path, location, comments)
         @parent_class = T.let(parent_class, T.nilable(String))
+      end
+
+      def ancestors
+        (super + [parent_class].compact).uniq
       end
     end
 

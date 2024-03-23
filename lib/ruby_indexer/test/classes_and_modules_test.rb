@@ -373,5 +373,37 @@ module RubyIndexer
       constant_path_references = T.must(@index["ConstantPathReferences"][0])
       assert_equal(["Foo::Bar", "Foo::Bar2"], constant_path_references.prepended_modules)
     end
+
+    def test_lazy_load_ancestors_for_modules
+      index(<<~RUBY)
+        module Foo
+          prepend A
+          prepend B
+          prepend B
+
+          include C
+          include D
+          include D
+        end
+      RUBY
+
+      assert_equal(["B", "A", "Foo", "C", "D"], @index["Foo"][0].ancestors)
+    end
+
+    def test_lazy_load_ancestors_for_classes
+      index(<<~RUBY)
+        class Foo < Bar
+          prepend A
+          prepend B
+          prepend B
+
+          include C
+          include D
+          include D
+        end
+      RUBY
+
+      assert_equal(["B", "A", "Foo", "C", "D", "Bar"], @index["Foo"][0].ancestors)
+    end
   end
 end
